@@ -1,7 +1,7 @@
 Package: twinSNP
 Type: Package
 Title: twinSNP package
-Version: 0.1.0
+Version: 0.1.1
 Author: Lucia de Hoyos <luciadeh@gmail.com>
 Maintainer: Lucia de Hoyos <luciadeh@gmail.com>
 Description: For a set of variants, it generates a vector of 
