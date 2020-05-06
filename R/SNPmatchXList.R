@@ -45,8 +45,9 @@ SNPmatchXList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
   write.table(excluded_snps, "input_snps_excluded.txt", row.names = F, quote = F, col.names = F)
   write.table(included_snps, "input_snps_annotated.txt", row.names = F, quote = F, col.names = T)
 
-
   # 2. DO MATCHING
+  if(file.exists("matched_snps_annotation.txt")== T){file.remove("matched_snps_annotation.txt")}
+  if(file.exists("input_snps_annotated_unmatched.txt")== T){file.remove("input_snps_annotated_unmatched.txt")}
   # Take out the SNPs included to match
   datB <- data.table(database[-as.numeric(rownames(included_snps)),])
   rownames(datB) <- c()
@@ -81,11 +82,10 @@ SNPmatchXList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
     subSnp <- A3[data.table::between(friends_ld05, lower= ld_interval_min[i], upper=ld_interval_max[i])]
     rownames(subSnp) <- c()
 
-    if(file.exists("matched_snps_annotation.txt")== T){file.remove("matched_snps_annotation.txt")}
-    if(file.exists("input_snps_annotated_unmatched.txt")== T){file.remove("input_snps_annotated_unmatched.txt")}
+
 
     matched_snps <- data.frame(input_snp= included_snps$snpID[i], subSnp, stringsAsFactors = F)
-    if (is.na(matched_snps$snpID)){
+    if (length(which(is.na(matched_snps$snpID))) > 0){
       write.table(matched_snps, "input_snps_annotated_unmatched.txt", append=T, quote=F, col.names=T, row.names=F)
     }else{
       write.table(matched_snps, "matched_snps_annotation.txt", append=T, quote=F, col.names=T, row.names=F)
