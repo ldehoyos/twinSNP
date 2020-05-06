@@ -35,7 +35,7 @@
 #' @import data.table
 #'
 #' @export
-SNPmatch_XList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
+SNPmatchXList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
   # 1. INCLUDED AND EXCLUDED SNPs.
   matxIn <- database[match(inputSNPs$input_snp, database$snpID),]
   excluded_snps <- inputSNPs[which(is.na(matxIn$snpID)),]
@@ -54,20 +54,20 @@ SNPmatch_XList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
   ### SET THE INTERVALS
 
   # Set the MAF interval at 5%
-  included_snps$maf_min <- included_snps$snp_maf - MAF
-  included_snps$maf_max <- included_snps$snp_maf + MAF
+  maf_min <- included_snps$snp_maf - MAF
+  maf_max <- included_snps$snp_maf + MAF
 
   # Set the gene density interval
-  included_snps$gdens_min <- included_snps$gene_count - GD*included_snps$gene_count
-  included_snps$gdens_max <- included_snps$gene_count + GD*included_snps$gene_count
+  gdens_min <- included_snps$gene_count - GD*included_snps$gene_count
+  gdens_max <- included_snps$gene_count + GD*included_snps$gene_count
 
   # Set the distance to nearest gene interval
-  included_snps$dist_interval_min <- included_snps$dist_nearest_gene_snpsnap - DNG*included_snps$dist_nearest_gene_snpsnap
-  included_snps$dist_interval_max <- included_snps$dist_nearest_gene_snpsnap + DNG*included_snps$dist_nearest_gene_snpsnap
+  dist_interval_min <- included_snps$dist_nearest_gene_snpsnap - DNG*included_snps$dist_nearest_gene_snpsnap
+  dist_interval_max <- included_snps$dist_nearest_gene_snpsnap + DNG*included_snps$dist_nearest_gene_snpsnap
 
   # Set the LD interval
-  included_snps$ld_interval_min <- included_snps$friends_ld05 - LDB*included_snps$friends_ld05
-  included_snps$ld_interval_max <- included_snps$friends_ld05 + LDB*included_snps$friends_ld05
+  ld_interval_min <- included_snps$friends_ld05 - LDB*included_snps$friends_ld05
+  ld_interval_max <- included_snps$friends_ld05 + LDB*included_snps$friends_ld05
 
   # Do the analysis and matching of SNPs
   matched_snps <- SNPinfo <- list()
@@ -75,13 +75,16 @@ SNPmatch_XList <- function(database, inputSNPs, MAF, GD, DNG, LDB){
   for (i in 1:nrow(included_snps)){
 
     # Do the filtering to select the variants that meet the requirements.
-    A1 <- datB[data.table::between(snp_maf, lower= included_snps$maf_min[i], upper= included_snps$maf_max[i])]
-    A2 <-   A1[data.table::between(gene_count, lower= included_snps$gdens_min[i], upper=included_snps$gdens_max[i])]
-    A3 <-   A2[data.table::between(dist_nearest_gene_snpsnap, lower= included_snps$dist_interval_min[i], upper= included_snps$dist_interval_max[i])]
-    subSnp <- A3[data.table::between(friends_ld05, lower= included_snps$ld_interval_min[i], upper=included_snps$ld_interval_max[i])]
+    A1 <- datB[data.table::between(snp_maf, lower= maf_min[i], upper= maf_max[i])]
+    A2 <-   A1[data.table::between(gene_count, lower= gdens_min[i], upper= gdens_max[i])]
+    A3 <-   A2[data.table::between(dist_nearest_gene_snpsnap, lower= dist_interval_min[i], upper=dist_interval_max[i])]
+    subSnp <- A3[data.table::between(friends_ld05, lower= ld_interval_min[i], upper=ld_interval_max[i])]
     rownames(subSnp) <- c()
 
-    matched_snps <- data.table(input_snp= included_snps$snpID[i], subSnp, stringsAsFactors = F)
+    if(file.exists("matched_snps_annotation.txt")== T){file.remove("matched_snps_annotation.txt")}
+    if(file.exists("input_snps_annotated_unmatched.txt")== T){file.remove("input_snps_annotated_unmatched.txt")}
+
+    matched_snps <- data.frame(input_snp= included_snps$snpID[i], subSnp, stringsAsFactors = F)
     if (is.na(matched_snps$snpID)){
       write.table(matched_snps, "input_snps_annotated_unmatched.txt", append=T, quote=F, col.names=T, row.names=F)
     }else{
