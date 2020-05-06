@@ -1,0 +1,15 @@
+Package: twinSNP
+Type: Package
+Title: twinSNP package
+Version: 0.1.0
+Author: Lucia de Hoyos <luciadeh@gmail.com>
+Maintainer: Lucia de Hoyos <luciadeh@gmail.com>
+Description: For a set of variants, it generates a vector of 
+    variants with similar characteristics of gene density, 
+    linkage disequilibrium, minor allele frequency and distance
+    to nearest gene.
+License: file LICENSE
+Imports: data.table
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
